@@ -3,42 +3,50 @@ from tkinter.filedialog import askdirectory, Tk
 from sys import exit
 from tinytag import TinyTag
 import re
-
-
-# try:
-#     Tk().withdraw() # Avoids showing tk window
-#     dir = askdirectory()
-#     listFiles = listdir(dir)
-#
-#     for file in listFiles:
-#         fileNameAndExtension = path.splitext(file)
-#         if fileNameAndExtension[1] == ".mp3":
-#             audioFile = TinyTag.get(dir+"/"+file)
-#             input(audioFile)
-#
-# except FileNotFoundError:
-#     exit(0)
+import eyed3
 
 try:
     Tk().withdraw() # Avoids showing tk window
     dir = askdirectory()
     listFiles = listdir(dir)
+    text_file = open("log.txt", "w")
 
     for file in listFiles:
         fileNameAndExtension = path.splitext(file)
         if fileNameAndExtension[1] == ".mp3":
+            print(fileNameAndExtension[0])
+            audiofile = eyed3.load(dir+"/"+file)
+            try:
+                audiofile.tag.play_count = 0
+            except Exception as ex:
+                try:
+                    text_file.write(fileNameAndExtension[0] + type(ex).__name__ + "\n")
+                except:
+                    continue
 
-            formatArtist = re.compile("^[a-zA-Z0-9+].* -")
-            formatTitle = re.compile("- [a-zA-Z0-9+].*")
-            formatFeat = re.compile("\(Feat. [a-zA-Z0-9+].*\)")
-            formatRemix = re.compile("\(Remix. [a-zA-Z0-9+].*\)")
+            try:
+                formatArtist = re.compile("^[a-zA-Z0-9+].* -")
+                formatTitle = re.compile("- [a-zA-Z0-9+].*")
+                formatFeat = re.compile("\(Feat. [a-zA-Z0-9+].*\)")
+                formatRemix = re.compile("\(Remix. [a-zA-Z0-9+].*\)")
 
-            artistSearch = formatArtist.search(fileNameAndExtension[0])
-            titleSearch = formatTitle.search(fileNameAndExtension[0])
-            featSearch = formatFeat.search(fileNameAndExtension[0])
-            remixSearch = formatRemix.search(fileNameAndExtension[0])
+                artistSearch = formatArtist.search(fileNameAndExtension[0])
+                titleSearch = formatTitle.search(fileNameAndExtension[0])
+                featSearch = formatFeat.search(fileNameAndExtension[0])
+                remixSearch = formatRemix.search(fileNameAndExtension[0])
+            except Exception as ex:
+                try:
+                    text_file.write(fileNameAndExtension[0] + type(ex).__name__ + "\n")
+                except:
+                    continue
 
-            artist = artistSearch.group().replace(" -", "").strip()
+            try:
+                artist = artistSearch.group().replace(" -", "").strip()
+            except Exception as ex:
+                try:
+                    text_file.write(fileNameAndExtension[0] + type(ex).__name__ + "\n")
+                except:
+                    continue
 
             try:
                 title = titleSearch.group().replace("- ", "").replace(featSearch.group(), "").replace(
@@ -50,35 +58,51 @@ try:
                     try:
                         title = titleSearch.group().replace("- ", "").replace(featSearch.group(), "").strip()
                     except:
-                        title = titleSearch.group().replace("- ", "").strip()
+                        try:
+                            title = titleSearch.group().replace("- ", "").strip()
+                        except Exception as ex:
+                            try:
+                                text_file.write(fileNameAndExtension[0] + type(ex).__name__ + "\n")
+                            except:
+                                continue
 
             try:
                 feat = featSearch.group().replace("(Feat. ", "").replace(")", "").split(", ")
                 feat = [item.strip() for item in feat]
             except AttributeError:
-                pass
+                continue
 
             try:
                 remix = remixSearch.group().replace("(Remix. ", "").replace(")", "").split(", ")
                 remix = [item.strip() for item in remix]
             except AttributeError:
-                pass
+                continue
 
             try:
-                print(f"Artist: '{artist}'\nTitle: '{title}'\nFeat: {feat}\nRemix: {remix}")
+                audiofile.tag.title = title
+                audiofile.tag.artist = ", ".join(feat)
+                audiofile.tag.album_artist = artist
+                audiofile.tag.original_artist = ", ".join(remix)
             except:
                 try:
-                    print(f"Artist: '{artist}'\nTitle: '{title}'\nFeat: {feat}")
+                    audiofile.tag.title = title
+                    audiofile.tag.artist = ", ".join(feat)
+                    audiofile.tag.album_artist = artist
                 except:
                     try:
-                        print(f"Artist: '{artist}'\nTitle: '{title}'\nRemix: {remix}")
+                        audiofile.tag.title = title
+                        audiofile.tag.album_artist = artist
+                        audiofile.tag.original_artist = ", ".join(remix)
                     except:
-                        print(f"Artist: '{artist}'\nTitle: '{title}'")
+                        try:
+                            audiofile.tag.title = title
+                            audiofile.tag.album_artist = artist
+                        except Exception as ex:
+                            try:
+                                text_file.write(fileNameAndExtension[0] + type(ex).__name__ + "\n")
+                            except:
+                                continue
 
-        input("\n")
-
+            audiofile.tag.save()
 except FileNotFoundError:
     exit(0)
-
-
-
