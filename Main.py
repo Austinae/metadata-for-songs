@@ -80,23 +80,27 @@ try:
 
             try:
                 audiofile.tag.title = title
-                audiofile.tag.artist = ", ".join(feat)
-                audiofile.tag.album_artist = artist
+                audiofile.tag.artist = artist
+                audiofile.tag.album_artist = ", ".join(feat)
                 audiofile.tag.original_artist = ", ".join(remix)
             except:
                 try:
                     audiofile.tag.title = title
-                    audiofile.tag.artist = ", ".join(feat)
-                    audiofile.tag.album_artist = artist
+                    audiofile.tag.artist = artist
+                    audiofile.tag.album_artist = ", ".join(feat)
+                    audiofile.tag.original_artist = ""
                 except:
                     try:
                         audiofile.tag.title = title
-                        audiofile.tag.album_artist = artist
+                        audiofile.tag.artist = artist
+                        audiofile.tag.album_artist = ""
                         audiofile.tag.original_artist = ", ".join(remix)
                     except:
                         try:
                             audiofile.tag.title = title
-                            audiofile.tag.album_artist = artist
+                            audiofile.tag.artist = artist
+                            audiofile.tag.album_artist = ""
+                            audiofile.tag.original_artist = ""
                         except Exception as ex:
                             try:
                                 text_file.write(fileNameAndExtension[0] + type(ex).__name__ + "\n")
